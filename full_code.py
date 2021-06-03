@@ -233,7 +233,7 @@ while(not(convergence)):
     charPatchWParamVar = float(dfinput.loc[0,'charLengthWVAR']);           # mean patch width
     charPatchWVarParam = float(dfinput.loc[0,'charLengthVarW']);        # patch width variance
     charPatchWVarParamVar = float(dfinput.loc[0,'charLengthVarWVAR']);        # characteristic patch length variance
-    coverageTolerance = 0.05;
+    coverageTolerance = 0.01;
     
     subtractiveMode = True;     # boolean variable to turn on subtractive mode
     # initial number of layers in subtractive mode

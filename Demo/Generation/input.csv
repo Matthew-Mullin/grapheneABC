@@ -1,4 +1,4 @@
 numModels,numConverged,error,length,width,beamRadius,opticalStepLength,acceptableOverlap,charLengthW,charLengthWVAR,charLengthVarW,charLengthVarWVAR,charLengthL,charLengthLVAR,charLengthVarL,charLengthVarLVAR,coverage,coverageVar
-10,5,0.05,5.61E-03,0.00561,0.000007,0.000055,0.2,1.40E-03,5.61E-06,0.00E+00,0.00E+00,7.03E-04,2.81E-06,0.00E+00,0.00E+00,0.25,0.005
-,,,,,,,,,,,,,,,,0.5,0.005
-,,,,,,,,,,,,,,,,0.25,0.005
+10,1,0.05,5.61E-03,0.00561,0.000007,0.000055,0.3,1.40E-03,2.80E-04,5.60E-05,2.80E-05,7.03E-04,1.41E-04,2.81E-05,5.62E-06,0.125,0.005
+,,,,,,,,,,,,,,,,0.125,0.005
+,,,,,,,,,,,,,,,,0.75,0.005
