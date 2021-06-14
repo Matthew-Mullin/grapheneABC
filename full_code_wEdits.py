@@ -572,15 +572,15 @@ while(not(convergence)):
     
     def charLengthCheck(r, layer, dfEx, dfMod): #input: r value, layer; output: charLengthW, charLengthL, charLengthWVar, charLengthLVar 
         #Characteristic Length
-        minLayer = layer
-        maxLayer = layer+1;
+        minLayer = layer-1
+        maxLayer = layer;
         alpha = 1/137;
         minVal = (1+1.13/2*np.pi*alpha*maxLayer)**-2;
         maxVal = (1+1.13/2*np.pi*alpha*minLayer)**-2;
         dfEx_grayScale = dfEx.to_numpy()
         dfEx_grayScale = dfEx_grayScale.copy(order='C')
         tolerance = 0.001
-        dfEx_grayScale = np.where((dfEx_grayScale > (minVal-tolerance)) & (dfEx_grayScale < (maxVal-tolerance)), 0, 1)
+        dfEx_grayScale = np.where(((minVal-tolerance) < dfEx_grayScale) & (dfEx_grayScale < (maxVal-tolerance)), 0, 1)
         # Find contours at a constant value of r
         contours_Ex = measure.find_contours(dfEx_grayScale, level=r, fully_connected='high')
         
