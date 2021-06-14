@@ -572,18 +572,19 @@ while(not(convergence)):
     
     def charLengthCheck(r, layer, dfEx, dfMod): #input: r value, layer; output: charLengthW, charLengthL, charLengthWVar, charLengthLVar 
         #Characteristic Length
-        minLayer = layer-1
-        maxLayer = layer;
+        minLayer = layer
+        maxLayer = layer+1;
         alpha = 1/137;
         minVal = (1+1.13/2*np.pi*alpha*maxLayer)**-2;
         maxVal = (1+1.13/2*np.pi*alpha*minLayer)**-2;
         dfEx_grayScale = dfEx.to_numpy()
         dfEx_grayScale = dfEx_grayScale.copy(order='C')
-        tolerance = 0.001
-        dfEx_grayScale = np.where(((minVal-tolerance) < dfEx_grayScale) & (dfEx_grayScale < (maxVal-tolerance)), 0, 1)
+        tolerance = 0.0001
+        dfEx_grayScale = np.where((dfEx_grayScale > (maxVal-tolerance)) & (dfEx_grayScale < (maxVal+tolerance)), 0, 1)
         # Find contours at a constant value of r
+        print(minVal, maxVal, (minVal-tolerance), (maxVal+tolerance))
+        sb.heatmap(dfEx_grayScale); plt.title('filteredEx'); plt.show();
         contours_Ex = measure.find_contours(dfEx_grayScale, level=r, fully_connected='high')
-        
         # Display the image and plot all contours found
         fig, ax = plt.subplots()
         ax.imshow(dfEx_grayScale, cmap=plt.cm.gray)
@@ -611,8 +612,9 @@ while(not(convergence)):
             #Characteristic Length
             dfMod_grayScale.append(dfMod[i].to_numpy())
             dfMod_grayScale[i] = dfMod_grayScale[i].copy(order='C')
-            dfMod_grayScale[i] = np.where((dfMod_grayScale[i] > (minVal-tolerance)) & (dfMod_grayScale[i] < (maxVal-tolerance)), 0, 1)
+            dfMod_grayScale[i] = np.where((dfMod_grayScale[i] > (maxVal-tolerance)) & (dfMod_grayScale[i] < (maxVal+tolerance)), 0, 1)
             # Find contours at a constant value of 0.8
+            sb.heatmap(dfMod_grayScale[i]); plt.title('filteredMod'); plt.show();
             contours_Mod = measure.find_contours(dfMod_grayScale[i], level=r, fully_connected='high')
             #RMS (Subtract DFE by each DFM; Square all new values; Sum all new values into new DFM)
             #plot characteristic length for check
@@ -660,7 +662,7 @@ while(not(convergence)):
         return dfMod_charLength
     
     #test function for one layer
-    layer0 = charLengthCheck(0.2,0,dfEx,dfMod);
+    layer0 = charLengthCheck(0.2,1,dfEx,dfMod);
     dfDistMod.loc[:,'Path_charLengthW'] = layer0[:,2]
     dfDistMod.loc[:,'Path_charLengthSTDW'] = layer0[:,4]
     dfDistMod.loc[:,'Path_charLengthL'] = layer0[:,1]
