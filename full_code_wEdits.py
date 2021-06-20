@@ -34,8 +34,8 @@ import time; import random as r; import pandas as pd; import math
 #inputs are length, width, graphene#, top left coord, starting points
 #that function should return an array of a randomly generated shape
 
-def generateShape(length, width, layer, maxLayer, right, top, left, bottom, grArray, patchY, patchX):
-    shape = np.zeros((length, width))+maxLayer;  #y rows, x columns
+def generateShape(length, width, right, top, left, bottom):
+    shape = np.zeros((length,width));  #y rows, x columns
     #create an array to store contour points
     contoursY = np.zeros((length+width)*2+10, dtype=int)
     contoursX = np.zeros((length+width)*2+10, dtype=int)
@@ -44,6 +44,7 @@ def generateShape(length, width, layer, maxLayer, right, top, left, bottom, grAr
     startX = 0
     endY = 0
     endX = 0
+    #this loop creates the contour that then gets filled in
     for i in range(4):
         #print(i)
         if(i==0): #if going from right to top
@@ -71,7 +72,7 @@ def generateShape(length, width, layer, maxLayer, right, top, left, bottom, grAr
         while(endFlag):
             #determine walking direction
             contourCounter +=1
-            if(contourCounter >= ((length+width)*2+10)):
+            if(contourCounter >= ((length+width)*5+10)):
                 print("out of bounds")
             if(startY>endY):
                 directionY = -1
@@ -87,19 +88,6 @@ def generateShape(length, width, layer, maxLayer, right, top, left, bottom, grAr
                 directionX = 0    
             #randomly select walking direction
             direction = round(np.random.rand()); #create random number. If 0, change y. If 1, change x.
-            
-            l = len(grArray)
-            w = len(grArray[0])
-            if((contoursY[contourCounter-1] + directionY + patchY) < l):
-                if(grArray[(contoursY[contourCounter-1] + directionY + patchY),contoursX[contourCounter-1]+patchX] == maxLayer):
-                    pass;
-                else:
-                    direction = 1;
-            if((contoursX[contourCounter-1] + directionX + patchX) < w):
-                if(grArray[contoursY[contourCounter-1]+patchY,contoursX[contourCounter-1] + directionX + patchX] == maxLayer):
-                    pass;
-                else:
-                    direction = 0;
                 
             #prevent from going outside boundingbox or passing last value
             if(contoursY[contourCounter-1] == endY):
@@ -133,7 +121,7 @@ def generateShape(length, width, layer, maxLayer, right, top, left, bottom, grAr
                     print("less than 0");
     #fills in the contours on the graphene array
     for i in range(contourCounter):
-        shape[contoursY[i],contoursX[i]] = layer
+        shape[contoursY[i],contoursX[i]] = 1
     #fill in the shape
     #first scan a given y range for the number of layer changes
     #after first encounter with layer you need one layer change to 0 layers and 1 layer change to then fill in
@@ -147,17 +135,17 @@ def generateShape(length, width, layer, maxLayer, right, top, left, bottom, grAr
         endFlag = False;
         changeEndCoord = 0;
         for i in range(width):
-            if(shape[j][i] == layer and initialFlag == False):
+            if(shape[j][i] == 1 and initialFlag == False):
                 initialFlag = True;
-            if(initialFlag == True and startFlag == False and shape[j][i] == maxLayer):
+            if(initialFlag == True and startFlag == False and shape[j][i] == 0):
                 changeStartCoord = i;
                 startFlag = True;
-            if(startFlag == True and endFlag == False and shape[j][i] == layer):
+            if(startFlag == True and endFlag == False and shape[j][i] == 1):
                 changeEndCoord = i;
                 endFlag = True;
         if(endFlag == True):
             for i in range(changeStartCoord, changeEndCoord):
-                shape[j][i] = layer;
+                shape[j][i] = 1;
     return shape;
 #define a function that scans through an array and outputs:
 def checkScan(grArray, length, width, maxLayer, y, x):
@@ -301,7 +289,8 @@ while(not(convergence)):
     #randomly select graphene patch in a for loop for N locations
         grArray += (layers);
         coverage[layers] = 1; #sets coverage fraction to 1 for max layers
-        for h in range(layers, -1, -1): #do this for each layer
+        for h in range(layers): #do this for each layer
+            print("h = " + str(h))
             numPatches = 0;
             # iterate until "desiredCoverage" of graphene is met
             coverageFlag=0;
@@ -314,7 +303,7 @@ while(not(convergence)):
                     
             while(coverage[h]<(desiredCoverage[h]-coverageTolerance)):
                 overlapFlag = True;
-                print("coverage:" + str(coverage));
+                print("coverage:" + str(coverage), "h = ", h);
                 attempts = 0; # instantiate variable for attempts at placing a patch and sucessful placements
                 while(overlapFlag):
     # increment attempts 
@@ -360,11 +349,17 @@ while(not(convergence)):
                 top = tempArray[2][math.floor(np.random.rand()*tempArray[2].size)]
                 left = tempArray[3][math.floor(np.random.rand()*tempArray[3].size)]
                 bottom = tempArray[4][math.floor(np.random.rand()*tempArray[4].size)]
-                tempArrayGraph = generateShape(patchL, patchW, h, layers, right, top, left, bottom, grArray, patchY, patchX)
-                grArray[patchY:(patchY+patchL),patchX:(patchX+patchW)] = tempArrayGraph
+                tempArrayGraph = generateShape(patchL, patchW, right, top, left, bottom)
+                mask = grArray[patchY:(patchY+patchL),patchX:(patchX+patchW)] >= layers;
+                mask = mask.astype(int);
+                grArray[patchY:(patchY+patchL),patchX:(patchX+patchW)] -= (layers-h)*tempArrayGraph*mask
                 coverage = calculateCoverage(grArray, sampleDimY, sampleDimX, layers);
                 numPatches+=1
                 print("num patches: " + str(numPatches))
+                alpha = 1/137;
+                sampleArray = (1+1.13/2*np.pi*alpha*grArray)**-2;
+        
+                sb.heatmap(np.transpose(sampleArray), square=True); plt.title('input pattern'); plt.show()
     #TRANSMISSION                    
             
         # Calculate transmission through N layers of graphene using alpha = fine structure constant
